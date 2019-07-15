@@ -9,142 +9,126 @@ import application.Game.Creatures.Plants.Plant;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Rectangle;
 
 public class Sheep extends Animal{
 
-	double hunger = 14;
-	double maxhunger = 16;
+
 	boolean eating = false;
 	boolean mate = false;
 	
 	public Sheep(Canvas canvas) {
 		super(canvas);
-		this.speed = 20;
+		init();
 	}
 	
 	public Sheep(Canvas canvas, int x, int y) {
 		super(canvas,x,y);
+		init();
+	}
+	
+	public void init() {
+		nutrients = 20;
+		hunger = 30;
+		maxhunger = 60;
+		consumption = 0.3;
 		this.speed = 20;
+		width = 20;
+		height = 20;
+		angle = 0;
 	}
 
 	public void update() {
+		
 		double energy_used = 0.1;
 		
 		//Checking if the sheep is hungry
 		if(hunger<=maxhunger/2 || eating) {
 			
-			mate = false;
+			//making it so that the sheep is eating and not mating
 			eating = true;
-			double angle = 0;
-			double dist = Double.MAX_VALUE;
-			Grass target = null;
+			mate = false;
 			
-			//looking through all of the creatures, find the closest grass creature
+			//The variables we need to find the closest piece of grass
+			Grass grass = null;
+			double dist = 0;
+			
+			
+			//looking through all of the plants to find the clossest piece of grass
 			Iterator<Plant> iterator = Game.getGame().plants.iterator();
 			while(iterator.hasNext()) {
-				Creature creature = iterator.next();
 				
-				//cheking if the object is a grass type
-				if(creature instanceof Grass) {
-					//finding the distance to the grass object
-					double tempdist = Math.sqrt((creature.x-this.x)*(creature.x-this.x)+(creature.y-this.y)*(creature.y-this.y));
+				Plant plant = iterator.next();
+				
+				//Checking if the plant is a grass
+				if(plant instanceof Grass) {
 					
-					//cheking if the previus distance is greater than the current
-					//if so, replace the target with the grass object being checked
-					if(tempdist<dist) {
+					Grass target = (Grass)(plant);
+					
+					//calculating the distance to the selected grass
+					double tempdist = Math.sqrt(Math.pow(target.currentCell.x-x, 2)+Math.pow(target.currentCell.y-y, 2));
+					
+					//If their is no grass found yet or the distance to the currently checked grass is smaller
+					//the selected grass becomes the main target
+					if(grass==null || dist>tempdist) {
+						grass = target;
 						dist = tempdist;
-						target = (Grass)creature;
-						angle = (Math.atan((double)(target.y-this.y)/(double)(target.x-this.x)))*180/Math.PI;
-						if(this.x>target.x) {
-							angle+=180;
-						}
 					}
+					
 				}
 			}
 			
-			//determining how much to move, and moving
-			//adding the energy used to move the the energy total
-			if(target!=null) {
-				if(speed<dist) {
-					move((int)speed,angle);
-					energy_used+=speed*0.003;
+			//moving toward the grass
+			//checking for there to be a grass object found
+			if(grass!=null) {
+				
+				//finding the angle between the grass and the sheep
+				double angle = Math.atan2((grass.currentCell.y-y),(grass.currentCell.x-x))*180/Math.PI;
+				
+				System.out.println("My current position is x:"+x+" y:"+y);
+				System.out.println("The position of the grass is x:"+grass.currentCell.x+" y:"+grass.currentCell.y);
+				System.out.println("The angle is "+angle);
+				
+				//making the sheep look in the direction of the grass
+				this.angle = angle;
+				
+				//moving toward the grass
+				if(dist<speed) {
+					move(dist,angle);
+					energy_used+=dist*0.01;
 				}else {
-					move((int)dist,angle);
-					energy_used+=dist*0.003;
+					move(speed,angle);
+					energy_used+=speed*0.01;
 				}
 				
-				//eat the grass if its less than 10 pixels ovay
-				if(Math.sqrt((target.x-this.x)*(target.x-this.x)+(target.y-this.y)*(target.y-this.y))<10) {
-					Game.getGame().updater.removed.add(target);
-					hunger+=0.5;
+				//if the sheep is above the grass it will eat it
+				if(new Rectangle(x,y,width,height).intersects(
+						new Rectangle(grass.currentCell.x,grass.currentCell.y,Game.getGame().grid.cellwidth,Game.getGame().grid.cellheight).getBoundsInLocal())) {
+					
+					//eating the grass as well the the grass next to it if it is present
+					eat(grass);
+					if(grass.currentCell.v>0 && Game.getGame().grid.cells[grass.currentCell.v-1][grass.currentCell.h].getPlant()!=null)eat(Game.getGame().grid.cells[grass.currentCell.v-1][grass.currentCell.h].getPlant());
+					if(grass.currentCell.v<Game.getGame().grid.cells.length-1 && Game.getGame().grid.cells[grass.currentCell.v+1][grass.currentCell.h].getPlant()!=null)eat(Game.getGame().grid.cells[grass.currentCell.v+1][grass.currentCell.h].getPlant());
+					if(grass.currentCell.h>0 && Game.getGame().grid.cells[grass.currentCell.v][grass.currentCell.h-1].getPlant()!=null)eat(Game.getGame().grid.cells[grass.currentCell.v][grass.currentCell.h-1].getPlant());
+					if(grass.currentCell.h>Game.getGame().grid.cells[0].length-1 && Game.getGame().grid.cells[grass.currentCell.v][grass.currentCell.h+1].getPlant()!=null)eat(Game.getGame().grid.cells[grass.currentCell.v][grass.currentCell.h+1].getPlant());
+					
 				}
 			}
 			
-			if(hunger>=maxhunger)eating = false;
-			
+			//if the sheep is full then it is no longer hungry
+			if(hunger>=maxhunger) {
+				eating=false;
+			}
 		}
 		
 		
 		
-		
+		//if the sheep is not hungry it will try and mate
 		
 		else {
-			//if the sheep is not eating, it will try to mate with another sheep
-			System.out.println("Mating");
 			mate = true;
 			
-			double angle = 0;
-			double dist = Double.MAX_VALUE;
-			Sheep target = null;
 			
-			//looking through all of the creatures, find the closest sheep creature to mate with
-			Iterator<Animal> iterator = Game.getGame().animals.iterator();
-			while(iterator.hasNext()) {
-				mate = false;
-				Creature creature = iterator.next();
-				
-				//cheking if the object is a sheep type and weather it wants to mate
-				if(creature instanceof Sheep && creature!=this) {
-					//finding the distance to the sheep object
-					double tempdist = Math.sqrt((creature.x-this.x)*(creature.x-this.x)+(creature.y-this.y)*(creature.y-this.y));
-					System.out.println("my location is "+this.x+":"+this.y+" and the location of the second sheep is "+creature.x+":"+creature.y);
-					System.out.println("The temp dist is equal to "+tempdist);
-					//cheking if the previus distance is greater than the current
-					//if so, replace the target with the sheep object being checked
-					if(tempdist<dist) {
-						dist = tempdist;
-						System.out.println("The distance changed to "+ dist);
-						target = (Sheep)creature;
-						angle = (Math.atan((double)(target.y-this.y)/(double)(target.x-this.x)))*180/Math.PI;
-						System.out.println("The angle changed to "+ angle);
-						if(this.x>target.x) {
-							angle+=180;
-						}
-					}
-				}
-			}
-			//determining how much to move, and moving
-			//adding the energy used to move the the energy total
-			if(target!=null) {
-				System.out.println("found sheep to mate with at " + target.x+":"+target.y);
-				System.out.println("The distance is "+dist+" and the angle is "+angle);
-				if(speed<dist) {
-					move((int)speed,angle);
-					energy_used+=speed*0.003;
-				}else {
-					move((int)dist,angle);
-					energy_used+=dist*0.003;
-				}
-				System.out.println("I am now at " + x+":"+y);
-				//mate with the other sheep if its less than 10 pixels ovay
-				if(Math.sqrt((target.x-this.x)*(target.x-this.x)+(target.y-this.y)*(target.y-this.y))<10) {
-					Sheep child = new Sheep(canvas,(x+target.x)/2,(y+target.y)/2);
-					child.hunger = 8;
-					Game.getGame().updater.added.add(child);
-					energy_used+=4;
-					target.hunger-=4;
-				}
-			}
 		}
 		
 		//detucting the energy used
@@ -159,8 +143,8 @@ public class Sheep extends Animal{
 	public void draw(GraphicsContext g) {
 		g.setFill(Color.WHITE);
 		g.setStroke(Color.BROWN.darker());
-		g.fillRect(x, y, 20, 20);
-		g.strokeRect(x, y, 20, 20);
+		g.fillRect(x, y, width, height);
+		g.strokeRect(x, y, width, height);
 	}
 
 }

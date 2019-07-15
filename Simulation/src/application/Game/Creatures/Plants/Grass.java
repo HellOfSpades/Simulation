@@ -22,16 +22,15 @@ public class Grass extends Plant{
 	
 	private void init() {
 		lifespan = 30;
-		width = 30;
-		height = 30;
+		nutrients = 1;
 	}
 
 	@Override
 	public void update()  {
 		
-		if(lifespan!=0) {
-			
-			lifespan--;
+		
+		
+		if(lifespan>0) {
 			
 			Random random = new Random();
 			
@@ -65,20 +64,26 @@ public class Grass extends Plant{
 				}
 				
 			}
-			
-			if(lifespan==0) {
-				Game.getGame().updater.removed.add(this);
-			}
 		}
 		
+		if(lifespan<=-5) {
+			Game.getGame().updater.removed.add(this);
+		}
 		
+		lifespan--;
 	}
 	public void draw(GraphicsContext g) {
 		Color c = Color.GREEN.brighter().brighter().brighter();
 		
+		if(lifespan<=0) {
+			c = Color.ORANGE.darker();
+		}
+		
 		for(int i = 1;i<level;i++) {
 			c = c.darker();
 		}
+		
+		
 		g.setFill(c);
 		g.setStroke(Color.GREEN.darker().darker());
 		g.fillRect(currentCell.x, currentCell.y, Game.getGame().grid.cellwidth, Game.getGame().grid.cellheight);

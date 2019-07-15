@@ -25,14 +25,13 @@ public class InterfaceController {
 	EventHandler<MouseEvent> handler;
 	
 	public void initialize() {
-		Main.game = Game.getGame();
+		Game.newGame();
 		Game.getGame().setCanvas(canvas);
 		
+		//handler for when the mouse is pressed on the game Canvas
 		handler = new EventHandler<MouseEvent>(){
 			@Override 
 			public void handle(MouseEvent e) { 
-				
-				
 				System.out.println("mouse clicked on x:"+e.getX()+" y:"+e.getY());
 				Cell cell =  Game.getGame().grid.getClossestCell(e.getX(), e.getY());
 				if(cell.getPlant()==null) {
@@ -46,7 +45,7 @@ public class InterfaceController {
 	
 	public void StartPress() {
 		System.out.println("Started");
-		Main.game.start();
+		Game.getGame().start();
 	}
 	
 	public void QuitPress(ActionEvent event) {
@@ -56,7 +55,7 @@ public class InterfaceController {
 			Scene scene = new Scene(root);
 			Stage stage = (Stage)((Node)event.getSource()).getScene().getWindow();
 			stage.setScene(scene);
-			Main.game.end();
+			Game.getGame().end();
 			
 		} catch (IOException e) {
 			// TODO Auto-generated catch block

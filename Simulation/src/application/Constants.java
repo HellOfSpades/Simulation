@@ -1,6 +1,6 @@
 package application;
 
-public class Constants {
+public abstract class Constants {
 
 	public static int SCREENWIDTH = 1000;
 	public static int SCREENHEIGHT = 1000;

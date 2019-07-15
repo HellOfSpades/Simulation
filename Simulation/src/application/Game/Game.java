@@ -1,4 +1,4 @@
-package application.Game;
+  package application.Game;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -28,7 +28,7 @@ public class Game {
 	static Game game;
 	public Grid grid;
 	
-	static {
+	static public void newGame() {
 		game = new Game();
 	}
 	
@@ -53,13 +53,18 @@ public class Game {
 	
 	public void start() {
 		System.out.println("Game Started!!");
-		//creatures.add(new Sheep(canvas,90,90));
-		//creatures.add(new Sheep(canvas,300,300));
+		animals.add(new Sheep(canvas,90,90));
+		animals.add(new Sheep(canvas,800,800));
 		updater.start();
 		repainter.start();
 	}
 	
 	public void end() {
 		updater.interrupt();
+		repainter.stop();
+		plants.clear();
+		animals.clear();
+		grid.cells = null;
+		game = null;
 	}
 }

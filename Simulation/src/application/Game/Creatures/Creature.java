@@ -10,13 +10,11 @@ import javafx.stage.Stage;
 
 public abstract class Creature {
 	
-	public int x;
-	public int y;
-	public int width;
-	public int height;
-	protected int speed;
+	public double x;
+	public double y;
 	protected Canvas canvas;
 	public int lifespan;
+	public double nutrients;
 	
 	public Creature(Canvas canvas){
 		Random random = new Random();

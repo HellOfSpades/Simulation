@@ -42,6 +42,12 @@ public class Updater extends Thread{
 					creature.update();
 				}
 				
+				// updating the animals
+				Iterator<Animal> animaliterator = Game.getGame().animals.iterator();
+				while(animaliterator.hasNext()) {
+					Animal creature = animaliterator.next();
+					creature.update();
+				}
 				
 				//removing creatures
 				Iterator<Creature> iterator = removed.iterator();
