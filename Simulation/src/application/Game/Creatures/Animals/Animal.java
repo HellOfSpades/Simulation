@@ -16,12 +16,14 @@ public abstract class Animal extends Creature{
 	protected double hunger;
 	protected double maxhunger;
 	protected double angle;
+	protected boolean mate = false;
+	protected boolean eating = false;
 	
 	public Animal(Canvas canvas) {
 		super(canvas);
 		// TODO Auto-generated constructor stub
 	}
-	public Animal(Canvas canvas, int x, int y) {
+	public Animal(Canvas canvas, double x, double y) {
 		super(canvas,x,y);
 		// TODO Auto-generated constructor stub
 	}

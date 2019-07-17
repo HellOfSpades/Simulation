@@ -10,29 +10,30 @@ import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
+import javafx.scene.transform.Affine;
+import javafx.scene.transform.Rotate;
 
 public class Sheep extends Animal{
 
-
-	boolean eating = false;
-	boolean mate = false;
+	Grass targetfood = null;
 	
 	public Sheep(Canvas canvas) {
 		super(canvas);
 		init();
 	}
 	
-	public Sheep(Canvas canvas, int x, int y) {
+	public Sheep(Canvas canvas, double x, double y) {
 		super(canvas,x,y);
 		init();
 	}
 	
 	public void init() {
+		lifespan = 300;
 		nutrients = 20;
 		hunger = 30;
 		maxhunger = 60;
 		consumption = 0.3;
-		this.speed = 20;
+		this.speed = 5;
 		width = 20;
 		height = 20;
 		angle = 0;
@@ -40,6 +41,8 @@ public class Sheep extends Animal{
 
 	public void update() {
 		
+		
+		lifespan--;
 		double energy_used = 0.1;
 		
 		//Checking if the sheep is hungry
@@ -65,14 +68,39 @@ public class Sheep extends Animal{
 					
 					Grass target = (Grass)(plant);
 					
+
+					
 					//calculating the distance to the selected grass
 					double tempdist = Math.sqrt(Math.pow(target.currentCell.x-x, 2)+Math.pow(target.currentCell.y-y, 2));
 					
 					//If their is no grass found yet or the distance to the currently checked grass is smaller
 					//the selected grass becomes the main target
 					if(grass==null || dist>tempdist) {
-						grass = target;
-						dist = tempdist;
+						
+						
+						//cheking if any other sheep have decided to eat that grass
+						boolean taken = false;
+						Iterator<Animal> animaliterator = Game.getGame().animals.iterator();
+						while(animaliterator.hasNext()) {
+							Creature creature = animaliterator.next();
+							if(creature instanceof Sheep && creature!=this) {
+								Sheep sheep = (Sheep)creature;
+								if(sheep.targetfood==target) {
+									taken = true;
+									break;
+								}
+							}
+							
+						}
+						
+						//if the grass was not taken by any other sheep, it will mark it
+						if(!taken) {
+							
+							grass = target;
+							dist = tempdist;
+							
+						}
+						
 					}
 					
 				}
@@ -81,13 +109,9 @@ public class Sheep extends Animal{
 			//moving toward the grass
 			//checking for there to be a grass object found
 			if(grass!=null) {
-				
+				targetfood = grass;
 				//finding the angle between the grass and the sheep
 				double angle = Math.atan2((grass.currentCell.y-y),(grass.currentCell.x-x))*180/Math.PI;
-				
-				System.out.println("My current position is x:"+x+" y:"+y);
-				System.out.println("The position of the grass is x:"+grass.currentCell.x+" y:"+grass.currentCell.y);
-				System.out.println("The angle is "+angle);
 				
 				//making the sheep look in the direction of the grass
 				this.angle = angle;
@@ -126,25 +150,79 @@ public class Sheep extends Animal{
 		//if the sheep is not hungry it will try and mate
 		
 		else {
-			mate = true;
 			
+			
+			mate = true;
+			double dist = 0;
+			Sheep mate = null;
+			
+			//looking for the closest mate
+			Iterator<Animal> animaliterator = Game.getGame().animals.iterator();
+			while(animaliterator.hasNext()) {
+				Animal potential_mate = animaliterator.next();
+				
+				//ckecking if the animal is another sheep
+				if(potential_mate instanceof Sheep && potential_mate.mate) {
+					Sheep sheep = (Sheep)(potential_mate);
+					
+					double tempdist = Math.sqrt(Math.pow(sheep.x-x, 2)+Math.pow(sheep.y-y, 2));
+					
+					//if a mate hasn't been found yet or it was, but this one is closer, it will mark it as the main sheep
+					if(sheep!=this && (mate==null || dist>tempdist)) {
+						mate = sheep;
+						dist = tempdist;
+					}
+				}
+			}
+			
+			
+			//going to the clossest mate, if such exists
+			if(mate!=null) {
+				
+				//determining the angle between our sheep and its mate
+				double angle = Math.atan2((mate.y-y),(mate.x-x))*180/Math.PI;
+				
+				//moving toward the mate
+				if(dist<speed) {
+					move(dist,angle);
+					energy_used+=dist*0.01;
+				}else {
+					move(speed,angle);
+					energy_used+=speed*0.01;
+				}
+				
+				//if the mate and our sheep intersect, they will mate
+				if(new Rectangle(x,y,width,height).intersects(
+						new Rectangle(mate.x,mate.y,mate.width,mate.height).getBoundsInLocal())) {
+					
+					energy_used+=40;
+					mate.hunger-=40;
+					
+					Game.getGame().updater.added.add(new Sheep(canvas,x,y));
+					
+				}
+			}
 			
 		}
 		
 		//detucting the energy used
 		hunger-=energy_used;
 		
-		if(hunger<=0) {
+		if(hunger<=0 || lifespan<=0) {
 			Game.getGame().updater.removed.add(this);
 		}
 		
 	}
+	
 
 	public void draw(GraphicsContext g) {
+		g.save();
+		g.transform(new Affine(new Rotate(angle, x+width/2, y+height/2)));
 		g.setFill(Color.WHITE);
 		g.setStroke(Color.BROWN.darker());
 		g.fillRect(x, y, width, height);
 		g.strokeRect(x, y, width, height);
+		g.restore();
 	}
 
 }

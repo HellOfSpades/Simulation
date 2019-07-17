@@ -22,16 +22,15 @@ public abstract class Creature {
 		y = random.nextInt(40);
 		this.canvas = canvas;
 	}
-	public Creature(Canvas canvas, int x, int y){
+	public Creature(Canvas canvas, double x2, double y2){
 		Random random = new Random();
-		this.x = x;
-		this.y = y;
+		this.x = x2;
+		this.y = y2;
 		this.canvas = canvas;
 	}
 	
 	public abstract void update();
 	
 	public abstract void draw(GraphicsContext g);
-	
 	
 }

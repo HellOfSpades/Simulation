@@ -1,10 +1,12 @@
 package application.Game.Interface;
 
+import java.awt.Button;
 import java.io.IOException;
 
 import application.Main;
 import application.Game.Game;
 import application.Game.Creatures.Creature;
+import application.Game.Creatures.Animals.Sheep;
 import application.Game.Creatures.Plants.Grass;
 import application.Game.Map.Cell;
 import javafx.event.ActionEvent;
@@ -15,6 +17,7 @@ import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
+import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.stage.Stage;
 
@@ -33,11 +36,15 @@ public class InterfaceController {
 			@Override 
 			public void handle(MouseEvent e) { 
 				System.out.println("mouse clicked on x:"+e.getX()+" y:"+e.getY());
-				Cell cell =  Game.getGame().grid.getClossestCell(e.getX(), e.getY());
-				if(cell.getPlant()==null) {
-					Game.getGame().plants.add(new Grass(canvas,cell));
+				if(e.getButton() == MouseButton.PRIMARY) {
+					Cell cell =  Game.getGame().grid.getClossestCell(e.getX(), e.getY());
+					if(cell.getPlant()==null) {
+						Game.getGame().plants.add(new Grass(canvas,cell));
+					}
 				}
-				
+				else {
+					Game.getGame().animals.add(new Sheep(canvas,e.getX(),e.getY()));
+				}
 			} 
 		};
 		canvas.addEventFilter(MouseEvent.MOUSE_CLICKED, handler);
