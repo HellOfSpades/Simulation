@@ -10,9 +10,13 @@ import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
+import javafx.scene.transform.Affine;
+import javafx.scene.transform.Rotate;
 
 public class Woolf extends Animal{
 
+	Sheep targetfood = null;
+	
 	public Woolf(Canvas canvas, double x, double y) {
 		super(canvas, x, y);
 		init();
@@ -22,12 +26,12 @@ public class Woolf extends Animal{
 	public void init() {
 		lifespan = 600;
 		nutrients = 10;
-		hunger = 50;
-		maxhunger = 100;
+		hunger = 20;
+		maxhunger = 40;
 		consumption = 0.7;
 		this.speed = 10;
-		width = 15;
-		height = 20;
+		width = 20;
+		height = 15;
 		angle = 0;
 	}
 
@@ -62,8 +66,6 @@ public class Woolf extends Animal{
 					
 					Sheep sheep = (Sheep)(animal);
 					
-
-					
 					//calculating the distance to the selected grass
 					double tempdist = Math.sqrt(Math.pow(sheep.x-x, 2)+Math.pow(sheep.y-y, 2));
 					
@@ -71,8 +73,28 @@ public class Woolf extends Animal{
 					//it will become the prey
 					if(prey==null || dist>tempdist) {
 						
-						prey = sheep;
-						dist = tempdist;
+						
+						//cheking if any other woolf have decided to eat that sheep
+						boolean taken = false;
+						Iterator<Animal> animaliterator = Game.getGame().animals.iterator();
+						while(animaliterator.hasNext()) {
+							Creature creature = animaliterator.next();
+							
+							if(creature instanceof Woolf && creature!=this) {
+								Woolf woolf = (Woolf)creature;
+								if(woolf.targetfood==sheep) {
+									taken = true;
+									break;
+								}
+							}
+							
+						}
+						
+						if(!taken) {
+							prey = sheep;
+							dist = tempdist;
+						}
+						
 							
 					}
 					
@@ -82,6 +104,9 @@ public class Woolf extends Animal{
 			//moving toward the prey
 			//checking for there to be a sheep object found
 			if(prey!=null) {
+				
+				targetfood=prey;
+				
 				//finding the angle between the sheep and the woolf
 				double angle = Math.atan2((prey.y-y),(prey.x-x))*180/Math.PI;
 				
@@ -100,6 +125,8 @@ public class Woolf extends Animal{
 				//if the woolf is above the sheep it will eat it
 				if(new Rectangle(x,y,width,height).intersects(
 						new Rectangle(prey.x,prey.y,prey.width,prey.height).getBoundsInLocal())) {
+					
+					eat(prey);
 				}
 			}
 			
@@ -115,7 +142,58 @@ public class Woolf extends Animal{
 		
 		else {
 			
+			mate = true;
+			double dist = 0;
+			Woolf mate = null;
 			
+			//looking for the closest mate
+			Iterator<Animal> animaliterator = Game.getGame().animals.iterator();
+			while(animaliterator.hasNext()) {
+				Animal potential_mate = animaliterator.next();
+				
+				//ckecking if the animal is another sheep
+				if(potential_mate instanceof Woolf && potential_mate.mate) {
+					Woolf woolf = (Woolf)(potential_mate);
+					
+					double tempdist = Math.sqrt(Math.pow(woolf.x-x, 2)+Math.pow(woolf.y-y, 2));
+					
+					//if a mate hasn't been found yet or it was, but this one is closer, it will mark it as the main sheep
+					if(woolf!=this && (mate==null || dist>tempdist)) {
+						mate = woolf;
+						dist = tempdist;
+					}
+				}
+			}
+			
+			
+			//going to the clossest mate, if such exists
+			if(mate!=null) {
+				
+				//determining the angle between our woolf and its mate
+				double angle = Math.atan2((mate.y-y),(mate.x-x))*180/Math.PI;
+				
+				this.angle = angle;
+				
+				//moving toward the mate
+				if(dist<speed) {
+					move(dist,angle);
+					energy_used+=dist*0.01;
+				}else {
+					move(speed,angle);
+					energy_used+=speed*0.01;
+				}
+				
+				//if the mate and our sheep intersect, they will mate
+				if(new Rectangle(x,y,width,height).intersects(
+						new Rectangle(mate.x,mate.y,mate.width,mate.height).getBoundsInLocal())) {
+					
+					energy_used+=20;
+					mate.hunger-=20;
+					
+					Game.getGame().updater.added.add(new Woolf(canvas,x,y));
+					
+				}
+			}
 			
 			
 		}
@@ -131,11 +209,13 @@ public class Woolf extends Animal{
 
 	@Override
 	public void draw(GraphicsContext g) {
-		g.setFill(Color.GREY);
-		g.setStroke(Color.BROWN.darker());
+		g.save();
+		g.transform(new Affine(new Rotate(angle, x+width/2, y+height/2)));
+		g.setFill(Color.ORANGE);
+		g.setStroke(Color.RED);
 		g.fillRect(x, y, width, height);
 		g.strokeRect(x, y, width, height);
-		
+		g.restore();
 	}
 
 }

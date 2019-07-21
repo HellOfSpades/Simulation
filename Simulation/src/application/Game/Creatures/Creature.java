@@ -2,6 +2,8 @@ package application.Game.Creatures;
 
 import java.util.Random;
 
+import javafx.beans.property.DoubleProperty;
+import javafx.beans.property.SimpleDoubleProperty;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.canvas.Canvas;
@@ -18,8 +20,8 @@ public abstract class Creature {
 	
 	public Creature(Canvas canvas){
 		Random random = new Random();
-		x = random.nextInt(40);
-		y = random.nextInt(40);
+		x = random.nextInt((int)canvas.getWidth());
+		y = random.nextInt((int)canvas.getHeight());
 		this.canvas = canvas;
 	}
 	public Creature(Canvas canvas, double x2, double y2){

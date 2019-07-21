@@ -1,9 +1,14 @@
 package application.Game.Creatures.Animals;
 
+import application.Constants;
 import application.Game.Game;
 import application.Game.Creatures.Creature;
 import application.Game.Creatures.Plants.Plant;
+import javafx.animation.KeyFrame;
+import javafx.animation.KeyValue;
+import javafx.animation.Timeline;
 import javafx.scene.canvas.Canvas;
+import javafx.util.Duration;
 
 public abstract class Animal extends Creature{
 
@@ -18,6 +23,7 @@ public abstract class Animal extends Creature{
 	protected double angle;
 	protected boolean mate = false;
 	protected boolean eating = false;
+	Timeline timeline;
 	
 	public Animal(Canvas canvas) {
 		super(canvas);
@@ -45,16 +51,21 @@ public abstract class Animal extends Creature{
 		
 		
 		
-		if(x<0) {
-			x = 0;
-		}else if(x+10>canvas.getWidth()) {
-			x = (int) (canvas.getWidth()-10);
+		
+		
+		if(x+width<0) {
+			x = canvas.getWidth()+x-width;
+			
+		}else if(x>canvas.getWidth()) {
+			x = x-canvas.getWidth()-width;
 		}
 		if(y<0) {
 			y = 0;
-		}else if(y+10>canvas.getHeight()) {
-			y = (int) (canvas.getHeight()-10);
+			
+		}else if(y+height>canvas.getHeight()) {
+			y = canvas.getHeight()-height;
 		}
+		
 	}
 
 }

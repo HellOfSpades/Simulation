@@ -8,6 +8,7 @@ import java.util.concurrent.CopyOnWriteArraySet;
 import application.Game.Creatures.Creature;
 import application.Game.Creatures.Animals.Animal;
 import application.Game.Creatures.Animals.Sheep;
+import application.Game.Creatures.Animals.Woolf;
 import application.Game.Creatures.Plants.Grass;
 import application.Game.Creatures.Plants.Plant;
 import application.Game.Map.Grid;
@@ -53,8 +54,6 @@ public class Game {
 	
 	public void start() {
 		System.out.println("Game Started!!");
-		animals.add(new Sheep(canvas,90,90));
-		animals.add(new Sheep(canvas,800,800));
 		updater.start();
 		repainter.start();
 	}
