@@ -35,7 +35,7 @@ public class Sheep extends Animal{
 		hunger = 30;
 		maxhunger = 60;
 		consumption = 0.3;
-		this.speed = 5;
+		this.speed = 10;
 		width = 20;
 		height = 20;
 		angle = 0;
@@ -46,6 +46,8 @@ public class Sheep extends Animal{
 		
 		lifespan--;
 		double energy_used = 0.1;
+		//setting the origin for the Game class
+		Game.getGame().setoriginpoint(this.x, this.y);
 		//checking if their is a woolf nearby
 		double radius = 200;
 		//if the sheep is allready in danger, the radius becomes bigger
@@ -58,7 +60,8 @@ public class Sheep extends Animal{
 		while(animaldangeriterator.hasNext()) {
 			Animal creature = animaldangeriterator.next();
 			//checking if the animal is a woolf, and if he is close
-			if(creature instanceof Woolf && radius>Math.sqrt(Math.pow(creature.x-x, 2)+Math.pow(creature.y-y, 2))) {
+			Game.getGame().setpoint(creature.x, creature.y);
+			if(creature instanceof Woolf && radius>Game.getGame().clossestdist()) {
 				//if the woolf is close then the sheep is in danger
 				//the woolf is added to the woolf's list
 				in_danger = true;
@@ -68,17 +71,42 @@ public class Sheep extends Animal{
 		
 		//if the sheep is in danger
 		if(in_danger) {
-			//finding the sum of all angles between the woolf and the sheep
-			double angle = 0;
+			//finding the best vector from the woolf's and the up or down wall
+			double vectorx = 0;
+			double vectory = 0;
+			//going through all of the woolfs and finding the sum of there vectors
 			Iterator<Woolf> woolfsiterator = woolfs.iterator();
 			while(woolfsiterator.hasNext()) {
+				
 				Woolf woolf = woolfsiterator.next();
-				angle+=Math.atan2((woolf.y-y),(woolf.x-x))*180/Math.PI;
+				Game.getGame().setpoint(woolf.x, woolf.y);
+				double priority = 1/Game.getGame().clossestdist();
+				
+				vectorx+=(Game.getGame().getVectorX()-this.x)*priority;
+				vectory+=(woolf.y-this.y)*priority;
 			}
-			//finding the mean of the angles and adding 180 to it, in order to look in the other direction
-			angle = angle/woolfs.size()+180;
+			
+			/*
+			//depending on wheather or not the sheep is closer to the top or the button, we will add those to the vector x and y as well
+			if(y<Game.getGame().canvas.getHeight()/2) {
+				double priority = 1/this.y;
+				vectory+=(-this.y)*priority;
+				
+			}else {
+				double priority = 1/(Game.getGame().canvas.getHeight()-y);
+				vectorx+=(Game.getGame().getVectorX()-this.x)*priority;
+				vectory+=(Game.getGame().canvas.getHeight()-this.y)*priority;
+			}
+			*/
+			
+			//changing the vector coordinates(they are based around the sheep in the center) to be normal coordinates
+			vectorx+=this.x;
+			vectory+=this.y;
+			Game.getGame().setpoint(vectorx, vectory);
+			angle = Game.getGame().clossestangle()+180;
+			
+			//moving
 			move(speed,angle);
-			this.angle = angle;
 			
 		}
 		//if the sheep is not in danger
@@ -109,7 +137,8 @@ public class Sheep extends Animal{
 
 						
 						//calculating the distance to the selected grass
-						double tempdist = Math.sqrt(Math.pow(target.currentCell.x-x, 2)+Math.pow(target.currentCell.y-y, 2));
+						Game.getGame().setpoint(target.x, target.y);
+						double tempdist = Game.getGame().clossestdist();
 						
 						//If their is no grass found yet or the distance to the currently checked grass is smaller
 						//the selected grass becomes the main target
@@ -149,8 +178,8 @@ public class Sheep extends Animal{
 				if(grass!=null) {
 					targetfood = grass;
 					//finding the angle between the grass and the sheep
-					double angle = Math.atan2((grass.currentCell.y-y),(grass.currentCell.x-x))*180/Math.PI;
-					
+					Game.getGame().setpoint(grass.x, grass.y);
+					double angle = Game.getGame().clossestangle();
 					//making the sheep look in the direction of the grass
 					this.angle = angle;
 					
@@ -165,7 +194,8 @@ public class Sheep extends Animal{
 					
 					//if the sheep is above the grass it will eat it
 					if(new Rectangle(x,y,width,height).intersects(
-							new Rectangle(grass.currentCell.x,grass.currentCell.y,Game.getGame().grid.cellwidth,Game.getGame().grid.cellheight).getBoundsInLocal())) {
+							new Rectangle(grass.currentCell.x,grass.currentCell.y,Game.getGame().grid.cellwidth,Game.getGame().grid.cellheight).getBoundsInLocal())
+							) {
 						
 						//eating the grass as well the the grass next to it if it is present
 						eat(grass);
@@ -203,7 +233,8 @@ public class Sheep extends Animal{
 					if(potential_mate instanceof Sheep && potential_mate.mate) {
 						Sheep sheep = (Sheep)(potential_mate);
 						
-						double tempdist = Math.sqrt(Math.pow(sheep.x-x, 2)+Math.pow(sheep.y-y, 2));
+						Game.getGame().setpoint(sheep.x, sheep.y);
+						double tempdist = Game.getGame().clossestdist();
 						
 						//if a mate hasn't been found yet or it was, but this one is closer, it will mark it as the main sheep
 						if(sheep!=this && (mate==null || dist>tempdist)) {
@@ -218,8 +249,10 @@ public class Sheep extends Animal{
 				if(mate!=null) {
 					
 					//determining the angle between our sheep and its mate
-					double angle = Math.atan2((mate.y-y),(mate.x-x))*180/Math.PI;
+					Game.getGame().setpoint(mate.x, mate.y);
+					double angle = Game.getGame().clossestangle();
 					
+					this.angle = angle;
 					//moving toward the mate
 					if(dist<speed) {
 						move(dist,angle);
@@ -232,6 +265,7 @@ public class Sheep extends Animal{
 					//if the mate and our sheep intersect, they will mate
 					if(new Rectangle(x,y,width,height).intersects(
 							new Rectangle(mate.x,mate.y,mate.width,mate.height).getBoundsInLocal())) {
+						
 						
 						energy_used+=40;
 						mate.hunger-=40;
@@ -262,6 +296,8 @@ public class Sheep extends Animal{
 		g.setFill(Color.WHITE);
 		g.setStroke(Color.BROWN.darker());
 		g.fillRect(x, y, width, height);
+		g.setFill(Color.BLACK);
+		g.fillRect(x+2*width/3, y+height/3, width/3, height/3);
 		g.strokeRect(x, y, width, height);
 		g.restore();
 	}

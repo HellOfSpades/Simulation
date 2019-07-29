@@ -20,36 +20,37 @@ import javafx.scene.canvas.Canvas;
 
 public class Game {
 	
-	Canvas canvas;
+	public Canvas canvas;
 	public volatile CopyOnWriteArraySet<Plant> plants = new CopyOnWriteArraySet<Plant>();
 	public volatile CopyOnWriteArraySet<Animal> animals = new CopyOnWriteArraySet<Animal>();
 	public Updater updater;
 	public Repainter repainter;
+	private double x;
+	private double y;
+	private double originx;
+	private double originy;
 
 	static Game game;
 	public Grid grid;
 	
-	static public void newGame() {
-		game = new Game();
+	static public void newGame(Canvas canvas) {
+		game = new Game(canvas);
 	}
 	
-	private Game(){
+	private Game(Canvas canvas){
+		
 		System.out.println("Game Created!!");
+		plants = new CopyOnWriteArraySet<Plant>();
+		animals = new CopyOnWriteArraySet<Animal>();
+		this.canvas = canvas;
+		updater = new Updater(this);
+		repainter = new Repainter(canvas,this);
+		grid = new Grid(canvas.getWidth(),canvas.getHeight(),320,130);
 		
 	}
 	
 	public static Game getGame() {
 		return game;
-	}
-	
-	public void setCanvas(Canvas canvas) {
-		plants = new CopyOnWriteArraySet<Plant>();
-		animals = new CopyOnWriteArraySet<Animal>();
-		System.out.println("Canvas Set!!");
-		this.canvas = canvas;
-		updater = new Updater(this);
-		repainter = new Repainter(canvas,this);
-		grid = new Grid(canvas.getWidth(),canvas.getHeight(),320,130);
 	}
 	
 	public void start() {
@@ -65,5 +66,52 @@ public class Game {
 		animals.clear();
 		grid.cells = null;
 		game = null;
+	}
+	
+	//these three methods are used to find angles and distances between two points
+	//sets the second point
+	public void setpoint(double x, double y) {
+		this.x = x;
+		this.y = y;
+	}
+	
+	//setting the point of origin
+	public void setoriginpoint(double x, double y) {
+		this.originx = x;
+		this.originy = y;
+	}
+	//by giving the point of origin you can find the clossest distance
+	//and also change the x coordinate
+	public double clossestdist() {
+		
+		double dist = Math.sqrt(Math.pow(x-originx, 2)+Math.pow(y-originy, 2));
+		
+		//if the distance is closer when you look in the other direction that it will be the chosen one
+		//also the x changes to match the x of the closest dist
+		if(dist>Math.sqrt(Math.pow(-(canvas.getWidth()-x)-originx, 2)+Math.pow(y-originy, 2))) {
+			x = -(canvas.getWidth()-x);
+			dist = Math.sqrt(Math.pow(x-originx, 2)+Math.pow(y-originy, 2));
+		}
+		if(dist>Math.sqrt(Math.pow(x+canvas.getWidth()-originx, 2)+Math.pow(y-originy, 2))) {
+			x = x+canvas.getWidth();
+			dist = Math.sqrt(Math.pow(x-originx, 2)+Math.pow(y-originy, 2));
+		}
+		
+		return dist;
+	}
+	//than we use the x to find the angle
+	//the input data is again, the point of origin
+	public double clossestangle() {
+		clossestdist();
+		
+		double angle = Math.atan2((y-originy),(x-originx))*180/Math.PI;;
+		
+		return angle;
+	}
+	
+	//returning the x that is suited for the vector
+	public double getVectorX() {
+		
+		return x;
 	}
 }

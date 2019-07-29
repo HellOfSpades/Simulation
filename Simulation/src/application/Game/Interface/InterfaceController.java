@@ -33,8 +33,7 @@ public class InterfaceController {
 	public void initialize() {
 		
 		//changing the screen to the game screen
-		Game.newGame();
-		Game.getGame().setCanvas(canvas);
+		Game.newGame(canvas);
 		
 		//adding all of the possible values to the choice box
 		creature_to_spawn.getItems().add("Grass");

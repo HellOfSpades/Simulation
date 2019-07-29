@@ -40,10 +40,18 @@ public class Grass extends Plant{
 				//Checking the left
 				if(currentCell.h>0 && Game.getGame().grid.cells[currentCell.v][currentCell.h-1].getPlant()==null)
 					directions.add(Game.getGame().grid.cells[currentCell.v][currentCell.h-1]);
+				//if the grass is on the edge, it will grow to the other side, only horizontally
+				else if(currentCell.h==0 && Game.getGame().grid.cells[currentCell.v][Game.getGame().grid.cells[currentCell.v].length-1].getPlant()==null) {
+					directions.add(Game.getGame().grid.cells[currentCell.v][Game.getGame().grid.cells[currentCell.v].length-1]);
+				}
 				
 				//Checking the right
 				if(currentCell.h<Game.getGame().grid.cells[0].length-1 && Game.getGame().grid.cells[currentCell.v][currentCell.h+1].getPlant()==null)
 					directions.add(Game.getGame().grid.cells[currentCell.v][currentCell.h+1]);
+				//if the grass is on the edge, it will grow to the other side, only horizontally
+				else if(currentCell.h==Game.getGame().grid.cells[0].length-1 && Game.getGame().grid.cells[currentCell.v][0].getPlant()==null) {
+					directions.add(Game.getGame().grid.cells[currentCell.v][0]);
+				}
 				
 				//Checking the up
 				if(currentCell.v>0 && Game.getGame().grid.cells[currentCell.v-1][currentCell.h].getPlant()==null)
@@ -52,6 +60,7 @@ public class Grass extends Plant{
 				//Checking the down
 				if(currentCell.v<Game.getGame().grid.cells.length-1 && Game.getGame().grid.cells[currentCell.v+1][currentCell.h].getPlant()==null)
 					directions.add(Game.getGame().grid.cells[currentCell.v+1][currentCell.h]);
+
 				
 				if(directions.size()>0) {
 					int chosen = random.nextInt(directions.size());

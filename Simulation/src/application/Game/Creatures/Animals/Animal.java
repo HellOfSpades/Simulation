@@ -53,11 +53,11 @@ public abstract class Animal extends Creature{
 		
 		
 		
-		if(x+width<0) {
-			x = canvas.getWidth()+x-width;
+		if(x<0) {
+			x = canvas.getWidth()+x;
 			
 		}else if(x>canvas.getWidth()) {
-			x = x-canvas.getWidth()-width;
+			x = x-canvas.getWidth();
 		}
 		if(y<0) {
 			y = 0;

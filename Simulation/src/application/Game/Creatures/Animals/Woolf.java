@@ -29,7 +29,7 @@ public class Woolf extends Animal{
 		hunger = 20;
 		maxhunger = 40;
 		consumption = 0.7;
-		this.speed = 10;
+		this.speed = 8;
 		width = 20;
 		height = 15;
 		angle = 0;
@@ -42,6 +42,9 @@ public class Woolf extends Animal{
 		
 		lifespan--;
 		double energy_used = 0.1;
+		
+		//setting the origin point
+		Game.getGame().setoriginpoint(this.x, this.y);
 		
 		//Checking if the woolf is hungry
 		if(hunger<=maxhunger/2 || eating) {
@@ -67,7 +70,8 @@ public class Woolf extends Animal{
 					Sheep sheep = (Sheep)(animal);
 					
 					//calculating the distance to the selected grass
-					double tempdist = Math.sqrt(Math.pow(sheep.x-x, 2)+Math.pow(sheep.y-y, 2));
+					Game.getGame().setpoint(sheep.x, sheep.y);
+					double tempdist = Game.getGame().clossestdist();
 					
 					//If their is no sheep found yet or the distance to the currently checked sheep is smaller
 					//it will become the prey
@@ -108,7 +112,8 @@ public class Woolf extends Animal{
 				targetfood=prey;
 				
 				//finding the angle between the sheep and the woolf
-				double angle = Math.atan2((prey.y-y),(prey.x-x))*180/Math.PI;
+				Game.getGame().setpoint(prey.x, prey.y);
+				double angle = Game.getGame().clossestangle();
 				
 				//making the woolf look in the direction of the sheep
 				this.angle = angle;
@@ -155,7 +160,8 @@ public class Woolf extends Animal{
 				if(potential_mate instanceof Woolf && potential_mate.mate) {
 					Woolf woolf = (Woolf)(potential_mate);
 					
-					double tempdist = Math.sqrt(Math.pow(woolf.x-x, 2)+Math.pow(woolf.y-y, 2));
+					Game.getGame().setpoint(woolf.x, woolf.y);
+					double tempdist = Game.getGame().clossestdist();
 					
 					//if a mate hasn't been found yet or it was, but this one is closer, it will mark it as the main sheep
 					if(woolf!=this && (mate==null || dist>tempdist)) {
@@ -170,7 +176,8 @@ public class Woolf extends Animal{
 			if(mate!=null) {
 				
 				//determining the angle between our woolf and its mate
-				double angle = Math.atan2((mate.y-y),(mate.x-x))*180/Math.PI;
+				Game.getGame().setpoint(mate.x, mate.y);
+				double angle = Game.getGame().clossestangle();
 				
 				this.angle = angle;
 				

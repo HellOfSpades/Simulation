@@ -83,7 +83,7 @@ public class Updater extends Thread{
 				System.gc();
 				
 				Thread.sleep(Constants.TIMEOUT);
-				System.out.println(Game.getGame().animals.size());
+				//System.out.println(Game.getGame().animals.size());
 				
 		}
 		}catch(InterruptedException e) {
