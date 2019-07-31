@@ -35,7 +35,7 @@ public class Sheep extends Animal{
 		hunger = 30;
 		maxhunger = 60;
 		consumption = 0.3;
-		this.speed = 10;
+		this.speed = 6;
 		width = 20;
 		height = 20;
 		angle = 0;
@@ -80,24 +80,17 @@ public class Sheep extends Animal{
 				
 				Woolf woolf = woolfsiterator.next();
 				Game.getGame().setpoint(woolf.x, woolf.y);
-				double priority = 1/Game.getGame().clossestdist();
+				//the priority of the woolf is quadraticly inversly proporsional to the distance
+				double priority = 1/Math.pow(Game.getGame().clossestdist(),2);
 				
 				vectorx+=(Game.getGame().getVectorX()-this.x)*priority;
 				vectory+=(woolf.y-this.y)*priority;
 			}
 			
-			/*
-			//depending on wheather or not the sheep is closer to the top or the button, we will add those to the vector x and y as well
-			if(y<Game.getGame().canvas.getHeight()/2) {
-				double priority = 1/this.y;
-				vectory+=(-this.y)*priority;
-				
-			}else {
-				double priority = 1/(Game.getGame().canvas.getHeight()-y);
-				vectorx+=(Game.getGame().getVectorX()-this.x)*priority;
-				vectory+=(Game.getGame().canvas.getHeight()-this.y)*priority;
-			}
-			*/
+			//making it so that the sheep run oway from the top and button planes as well
+			//the x for those vectors is the same as the sheeps, so it makes no difference weather we add them or not
+			vectory+=(0-this.y)*(1/Math.pow(this.y,2));
+			vectory+=(Game.getGame().canvas.getHeight()-this.y)*(1/Math.pow(Game.getGame().canvas.getHeight()-this.y,2));
 			
 			//changing the vector coordinates(they are based around the sheep in the center) to be normal coordinates
 			vectorx+=this.x;
